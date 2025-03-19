@@ -86,6 +86,9 @@ class BMI085Accel {
     float getAccelX_mss();
     float getAccelY_mss();
     float getAccelZ_mss();
+    float getAccelX_g();
+    float getAccelY_g();
+    float getAccelZ_g();
     float getTemperature_C();
     uint64_t getTime_ps();
     void estimateBias();
@@ -178,8 +181,10 @@ class BMI085Accel {
     const float G = 9.807f;
     // accel full scale range
     float accel_range_mss;
+    float accel_range_g;
     // accel data
     float accel_mss[3];
+    float accel_g[3];
     // temperature data
     float temp_c;
     // sensor time

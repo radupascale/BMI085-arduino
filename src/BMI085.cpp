@@ -649,11 +649,11 @@ int BMI085Accel::begin()
   } 
   delay(50);
   /* set default range */
-  if (!setRange(RANGE_16G)) {
+  if (!setRange(RANGE_8G)) {
     return -7;
   }
   /* set default ODR */
-  if (!setOdr(ODR_1600HZ_BW_280HZ)) {
+  if (!setOdr(ODR_25HZ_BW_3HZ)) {
     return -8;
   }
   /* check config errors */
@@ -793,18 +793,22 @@ bool BMI085Accel::setRange(Range range)
     switch (range) {
       case RANGE_2G: {
         accel_range_mss = 2.0f * G;
+        accel_range_g = 2.0;
         break;
       }
       case RANGE_4G: {
         accel_range_mss = 4.0f * G;
+        accel_range_g = 4.0;
         break;
       }
       case RANGE_8G: {
         accel_range_mss = 8.0f * G;
+        accel_range_g = 8.0;
         break;
       }
       case RANGE_16G: {
         accel_range_mss = 16.0f * G;
+        accel_range_g = 16.0;
         break;
       }      
     }
@@ -857,7 +861,7 @@ bool BMI085Accel::getDrdyStatus()
   readRegisters(ACC_DRDY_ADDR,1,&readReg);
   return (GET_FIELD(ACC_DRDY,readReg)) ? true : false;
 }
-
+;
 /* reads the BMI085 accel */
 void BMI085Accel::readSensor()
 {
@@ -868,9 +872,16 @@ void BMI085Accel::readSensor()
   accel[0] = (_buffer[1] << 8) | _buffer[0];
   accel[1] = (_buffer[3] << 8) | _buffer[2];
   accel[2] = (_buffer[5] << 8) | _buffer[4];
-  accel_mss[0] = (float) (accel[0] * tX[0] + accel[1] * tX[1] + accel[2] * tX[2]) / 32768.0f * accel_range_mss;
-  accel_mss[1] = (float) (accel[0] * tY[0] + accel[1] * tY[1] + accel[2] * tY[2]) / 32768.0f * accel_range_mss;
-  accel_mss[2] = (float) (accel[0] * tZ[0] + accel[1] * tZ[1] + accel[2] * tZ[2]) / 32768.0f * accel_range_mss;
+
+//   accel_mss[0] = (float) (accel[0] * tX[0] + accel[1] * tX[1] + accel[2] * tX[2]) / 32768.0f * accel_range_mss;
+//   accel_mss[1] = (float) (accel[0] * tY[0] + accel[1] * tY[1] + accel[2] * tY[2]) / 32768.0f * accel_range_mss;
+//   accel_mss[2] = (float) (accel[0] * tZ[0] + accel[1] * tZ[1] + accel[2] * tZ[2]) / 32768.0f * accel_range_mss;
+
+  /* Convert to G, not mss */
+  accel_g[0] = (float) (accel[0] * tX[0] + accel[1] * tX[1] + accel[2] * tX[2]) / 32768.0f * accel_range_g;
+  accel_g[1] = (float) (accel[0] * tY[0] + accel[1] * tY[1] + accel[2] * tY[2]) / 32768.0f * accel_range_g;
+  accel_g[2] = (float) (accel[0] * tZ[0] + accel[1] * tZ[1] + accel[2] * tZ[2]) / 32768.0f * accel_range_g;
+
   /* time data */
   current_time_counter = (_buffer[8] << 16) | (_buffer[7] << 8) | _buffer[6];
   time_counter = current_time_counter - prev_time_counter;
@@ -902,6 +913,21 @@ float BMI085Accel::getAccelY_mss()
 float BMI085Accel::getAccelZ_mss()
 {
   return accel_mss[2];
+}
+
+float BMI085Accel::getAccelX_g()
+{
+  return accel_g[0];
+}
+
+float BMI085Accel::getAccelY_g()
+{
+  return accel_g[1];
+}
+
+float BMI085Accel::getAccelZ_g()
+{
+  return accel_g[2];
 }
 
 /* returns the temperature, C */
